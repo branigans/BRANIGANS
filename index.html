@@ -1,0 +1,898 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Branigans — Registro de Clientes</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600&family=DM+Sans:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --dark: #110d05;
+    --gold: #c9951a;
+    --gold-light: #e8b84b;
+    --cream: #faf6ee;
+    --cream-mid: #f0e8d5;
+    --text: #1a1408;
+    --text-mid: #5c4d30;
+    --text-light: #9c8660;
+    --border: #ddd0b0;
+    --success: #2d6a4f;
+    --error: #c1121f;
+    --white: #ffffff;
+  }
+
+  html, body {
+    min-height: 100vh;
+    background: var(--cream);
+    font-family: 'DM Sans', sans-serif;
+    color: var(--text);
+  }
+
+  /* HEADER */
+  .header {
+    background: var(--dark);
+    padding: 0 24px;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  .brand {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .brand-name {
+    font-family: 'Playfair Display', serif;
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--gold-light);
+    letter-spacing: 0.1em;
+  }
+
+  .brand-tagline {
+    font-size: 9px;
+    color: var(--text-light);
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    margin-top: 1px;
+  }
+
+  .nav {
+    display: flex;
+    gap: 4px;
+  }
+
+  .nav-btn {
+    background: transparent;
+    border: 1px solid #2e2510;
+    color: #7a6640;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 12px;
+    padding: 6px 14px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.18s;
+    letter-spacing: 0.03em;
+  }
+
+  .nav-btn:hover { border-color: #5a4520; color: #c9951a; }
+
+  .nav-btn.active {
+    background: var(--gold);
+    border-color: var(--gold);
+    color: var(--dark);
+    font-weight: 500;
+  }
+
+  /* VIEWS */
+  .view { display: none; }
+  .view.active { display: block; }
+
+  /* ===== REGISTRO VIEW ===== */
+  .registro-wrap {
+    min-height: calc(100vh - 60px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 20px;
+    background: var(--cream);
+  }
+
+  .form-card {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 40px 44px;
+    width: 100%;
+    max-width: 480px;
+    box-shadow: 0 2px 24px rgba(17,13,5,0.08);
+  }
+
+  .form-logo {
+    text-align: center;
+    margin-bottom: 28px;
+  }
+
+  .form-logo-text {
+    font-family: 'Playfair Display', serif;
+    font-size: 26px;
+    font-weight: 600;
+    color: var(--dark);
+    letter-spacing: 0.1em;
+  }
+
+  .form-logo-sub {
+    font-size: 10px;
+    color: var(--text-light);
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    margin-top: 3px;
+  }
+
+  .form-divider {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--gold), transparent);
+    margin: 0 20px 28px;
+  }
+
+  .form-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 20px;
+    font-weight: 500;
+    color: var(--text);
+    margin-bottom: 6px;
+    text-align: center;
+  }
+
+  .form-subtitle {
+    font-size: 13px;
+    color: var(--text-mid);
+    text-align: center;
+    margin-bottom: 28px;
+    line-height: 1.6;
+  }
+
+  .field {
+    margin-bottom: 18px;
+  }
+
+  .field label {
+    display: block;
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--text-mid);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 7px;
+  }
+
+  .field input {
+    width: 100%;
+    padding: 11px 16px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    color: var(--text);
+    background: var(--cream);
+    outline: none;
+    transition: border-color 0.15s, background 0.15s;
+  }
+
+  .field input:focus {
+    border-color: var(--gold);
+    background: var(--white);
+    box-shadow: 0 0 0 3px rgba(201,149,26,0.12);
+  }
+
+  .field input.error { border-color: var(--error); }
+
+  .field-error {
+    font-size: 12px;
+    color: var(--error);
+    margin-top: 5px;
+  }
+
+  .submit-btn {
+    width: 100%;
+    padding: 13px;
+    background: var(--dark);
+    color: var(--gold-light);
+    border: none;
+    border-radius: 8px;
+    font-family: 'Playfair Display', serif;
+    font-size: 16px;
+    font-weight: 500;
+    letter-spacing: 0.05em;
+    cursor: pointer;
+    margin-top: 6px;
+    transition: background 0.2s, transform 0.1s;
+    position: relative;
+  }
+
+  .submit-btn:hover { background: #2a1e08; }
+  .submit-btn:active { transform: scale(0.99); }
+  .submit-btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+
+  .spinner {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    border: 2px solid rgba(232,184,75,0.3);
+    border-top-color: var(--gold-light);
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+    vertical-align: middle;
+    margin-right: 8px;
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .dup-alert {
+    display: none;
+    background: #fff8e1;
+    border: 1px solid #e6b800;
+    border-radius: 8px;
+    padding: 12px 16px;
+    margin-top: 14px;
+    font-size: 13px;
+    color: #7a5e00;
+    line-height: 1.5;
+  }
+
+  .success-state {
+    display: none;
+    text-align: center;
+    padding: 12px 0;
+  }
+
+  .success-check {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    background: #e8f5e9;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 20px;
+    font-size: 28px;
+  }
+
+  .success-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 22px;
+    color: var(--text);
+    margin-bottom: 10px;
+  }
+
+  .success-text {
+    font-size: 14px;
+    color: var(--text-mid);
+    line-height: 1.7;
+    margin-bottom: 24px;
+  }
+
+  .nuevo-btn {
+    padding: 10px 28px;
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    color: var(--text-mid);
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .nuevo-btn:hover { border-color: var(--gold); color: var(--gold); }
+
+  /* ===== ADMIN VIEW ===== */
+  .admin-wrap {
+    padding: 28px 24px;
+    max-width: 900px;
+    margin: 0 auto;
+  }
+
+  .admin-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .admin-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 22px;
+    font-weight: 500;
+    color: var(--text);
+  }
+
+  .stats-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+
+  .stat-box {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px;
+    text-align: center;
+  }
+
+  .stat-num {
+    font-family: 'Playfair Display', serif;
+    font-size: 32px;
+    font-weight: 500;
+    color: var(--text);
+  }
+
+  .stat-label {
+    font-size: 11px;
+    color: var(--text-light);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-top: 3px;
+  }
+
+  .controls-row {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+  }
+
+  .search-box {
+    flex: 1;
+    min-width: 200px;
+    padding: 9px 16px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    background: var(--white);
+    color: var(--text);
+    outline: none;
+  }
+
+  .search-box:focus { border-color: var(--gold); }
+
+  .ctrl-btn {
+    padding: 9px 16px;
+    border: 1px solid var(--border);
+    background: var(--white);
+    border-radius: 8px;
+    font-size: 13px;
+    color: var(--text-mid);
+    cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+    transition: all 0.15s;
+    white-space: nowrap;
+  }
+
+  .ctrl-btn:hover { border-color: var(--gold); color: var(--gold); }
+
+  .ctrl-btn.primary {
+    background: var(--dark);
+    color: var(--gold-light);
+    border-color: var(--dark);
+    font-weight: 500;
+  }
+
+  .ctrl-btn.primary:hover { background: #2a1e08; }
+
+  .table-card {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+
+  thead th {
+    text-align: left;
+    font-size: 10px;
+    font-weight: 500;
+    color: var(--text-light);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    padding: 10px 16px;
+    background: var(--cream);
+    border-bottom: 1px solid var(--border);
+  }
+
+  tbody td {
+    padding: 12px 16px;
+    border-bottom: 1px solid #f0e8d5;
+    color: var(--text);
+    vertical-align: middle;
+  }
+
+  tbody tr:last-child td { border-bottom: none; }
+  tbody tr:hover td { background: var(--cream); }
+
+  .avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: var(--dark);
+    color: var(--gold-light);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 500;
+    flex-shrink: 0;
+  }
+
+  .name-cell { display: flex; align-items: center; gap: 10px; }
+  .date-txt { font-size: 11px; color: var(--text-light); }
+
+  .empty {
+    text-align: center;
+    padding: 56px 20px;
+    color: var(--text-light);
+    font-size: 14px;
+  }
+
+  .sync-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 11px;
+    padding: 3px 10px;
+    border-radius: 12px;
+    background: #e8f5e9;
+    color: var(--success);
+    border: 1px solid #a8d5b5;
+    margin-left: 8px;
+  }
+
+  .sync-badge.error { background: #fff0f0; color: var(--error); border-color: #f5c0c0; }
+
+  .notion-dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+
+  /* Admin password */
+  .admin-lock {
+    min-height: calc(100vh - 60px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 20px;
+  }
+
+  .lock-card {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 36px 40px;
+    width: 100%;
+    max-width: 360px;
+    text-align: center;
+  }
+
+  .lock-icon { font-size: 36px; margin-bottom: 16px; }
+
+  .lock-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 20px;
+    margin-bottom: 20px;
+    color: var(--text);
+  }
+
+  .lock-error { font-size: 12px; color: var(--error); margin-top: 8px; }
+
+  /* Toast */
+  .toast {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    background: var(--dark);
+    color: var(--gold-light);
+    padding: 12px 20px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 500;
+    opacity: 0;
+    transform: translateY(8px);
+    transition: all 0.25s;
+    z-index: 999;
+    pointer-events: none;
+  }
+
+  .toast.show { opacity: 1; transform: translateY(0); }
+
+  @media (max-width: 480px) {
+    .form-card { padding: 28px 22px; }
+    .stats-row { grid-template-columns: repeat(3,1fr); }
+    .stat-num { font-size: 24px; }
+    .nav-btn { font-size: 11px; padding: 5px 10px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="brand">
+    <div class="brand-name">BRANIGANS</div>
+    <div class="brand-tagline">Authentic · Guadalajara</div>
+  </div>
+  <div class="nav">
+    <button class="nav-btn active" onclick="showView('registro')">Registro</button>
+    <button class="nav-btn" onclick="showView('admin')">Admin</button>
+  </div>
+</div>
+
+<!-- VISTA REGISTRO -->
+<div id="view-registro" class="view active">
+  <div class="registro-wrap">
+    <div class="form-card">
+      <div class="form-logo">
+        <div class="form-logo-text">BRANIGANS</div>
+        <div class="form-logo-sub">Authentic — Ropa de Hombre</div>
+      </div>
+      <div class="form-divider"></div>
+
+      <div id="form-body">
+        <p class="form-title">Únete a nuestra lista</p>
+        <p class="form-subtitle">Recibe promociones exclusivas y novedades directamente en tu celular y correo.</p>
+
+        <div class="field">
+          <label for="f-nombre">Nombre completo</label>
+          <input type="text" id="f-nombre" placeholder="Tu nombre" autocomplete="name">
+          <p class="field-error" id="e-nombre"></p>
+        </div>
+        <div class="field">
+          <label for="f-cel">Celular</label>
+          <input type="tel" id="f-cel" placeholder="10 dígitos" maxlength="10" autocomplete="tel">
+          <p class="field-error" id="e-cel"></p>
+        </div>
+        <div class="field">
+          <label for="f-email">Correo electrónico</label>
+          <input type="email" id="f-email" placeholder="tu@correo.com" autocomplete="email">
+          <p class="field-error" id="e-email"></p>
+        </div>
+
+        <div class="dup-alert" id="dup-alert">
+          Ya estás registrado con este número. ¡Gracias por visitarnos! Pronto recibirás nuestras promociones.
+        </div>
+
+        <button class="submit-btn" id="btn-submit" onclick="submitForm()">Registrarme</button>
+      </div>
+
+      <div class="success-state" id="success-state">
+        <div class="success-check">✓</div>
+        <p class="success-title">¡Registro exitoso!</p>
+        <p class="success-text">Ya eres parte de la familia Branigans.<br>Te avisaremos de promociones y novedades por WhatsApp y email.</p>
+        <button class="nuevo-btn" onclick="resetForm()">Nuevo registro</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- VISTA ADMIN -->
+<div id="view-admin" class="view">
+  <!-- LOCK -->
+  <div class="admin-lock" id="admin-lock">
+    <div class="lock-card">
+      <div class="lock-icon">🔒</div>
+      <p class="lock-title">Acceso administrativo</p>
+      <div class="field">
+        <input type="password" id="admin-pass" placeholder="Contraseña" onkeydown="if(event.key==='Enter')checkPass()">
+      </div>
+      <p class="lock-error" id="lock-error"></p>
+      <button class="submit-btn" onclick="checkPass()" style="margin-top:14px;">Entrar</button>
+    </div>
+  </div>
+
+  <!-- PANEL -->
+  <div class="admin-wrap" id="admin-panel" style="display:none;">
+    <div class="admin-header">
+      <div>
+        <span class="admin-title">Clientes registrados</span>
+        <span class="sync-badge" id="sync-badge"><span class="notion-dot"></span>Sincronizado</span>
+      </div>
+      <button class="ctrl-btn" onclick="logout()" style="font-size:12px;">Cerrar sesión</button>
+    </div>
+
+    <div class="stats-row">
+      <div class="stat-box">
+        <div class="stat-num" id="s-total">0</div>
+        <div class="stat-label">Total</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-num" id="s-hoy">0</div>
+        <div class="stat-label">Hoy</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-num" id="s-semana">0</div>
+        <div class="stat-label">Esta semana</div>
+      </div>
+    </div>
+
+    <div class="controls-row">
+      <input class="search-box" type="text" placeholder="Buscar nombre, celular o correo..." id="search" oninput="renderTable()">
+      <button class="ctrl-btn" onclick="exportCSV()">Exportar CSV</button>
+      <button class="ctrl-btn primary" onclick="copySheets()">Copiar para Sheets</button>
+    </div>
+
+    <div class="table-card">
+      <table>
+        <thead>
+          <tr>
+            <th>Cliente</th>
+            <th>Celular</th>
+            <th>Correo</th>
+            <th>Fecha</th>
+          </tr>
+        </thead>
+        <tbody id="tbody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  // ============ CONFIG ============
+  const NOTION_TOKEN = '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';
+  const NOTION_DB    = '351ae760befa80f7b51bc1257689f6fe';
+  const SHEETS_URL   = 'https://script.google.com/macros/s/AKfycbwQaqYlTGDcf-73_0W-NloBbPQJiZg1AIGbNJFPWLf2uVwSwv7Ra2CtPWr4Q9KeDMbY/exec';
+  const ADMIN_PASS   = 'branigans2024';
+  const PROXIES      = [
+    'https://corsproxy.io/?url=',
+    'https://api.allorigins.win/raw?url=',
+    'https://thingproxy.freeboard.io/fetch/'
+  ];
+
+  // ============ LOCAL DB ============
+  let clients = JSON.parse(localStorage.getItem('brn_clients') || '[]');
+
+  function saveLocal() {
+    localStorage.setItem('brn_clients', JSON.stringify(clients));
+  }
+
+  // ============ VIEWS ============
+  let adminAuth = false;
+
+  function showView(v) {
+    document.querySelectorAll('.view').forEach(el => el.classList.remove('active'));
+    document.querySelectorAll('.nav-btn').forEach(el => el.classList.remove('active'));
+    document.getElementById('view-' + v).classList.add('active');
+    const idx = ['registro','admin'].indexOf(v);
+    document.querySelectorAll('.nav-btn')[idx].classList.add('active');
+    if (v === 'admin') {
+      if (adminAuth) showPanel();
+      else { document.getElementById('admin-lock').style.display='flex'; document.getElementById('admin-panel').style.display='none'; }
+    }
+  }
+
+  function checkPass() {
+    const val = document.getElementById('admin-pass').value;
+    if (val === ADMIN_PASS) { adminAuth = true; showPanel(); }
+    else { document.getElementById('lock-error').textContent = 'Contraseña incorrecta'; }
+  }
+
+  function showPanel() {
+    document.getElementById('admin-lock').style.display = 'none';
+    document.getElementById('admin-panel').style.display = 'block';
+    updateStats();
+    renderTable();
+  }
+
+  function logout() {
+    adminAuth = false;
+    document.getElementById('admin-pass').value = '';
+    document.getElementById('lock-error').textContent = '';
+    showView('registro');
+  }
+
+  // ============ FORM ============
+  function validate() {
+    let ok = true;
+    const nombre = document.getElementById('f-nombre').value.trim();
+    const cel    = document.getElementById('f-cel').value.trim();
+    const email  = document.getElementById('f-email').value.trim();
+
+    ['nombre','cel','email'].forEach(f => {
+      document.getElementById('e-'+f).textContent = '';
+      document.getElementById('f-'+f).classList.remove('error');
+    });
+    document.getElementById('dup-alert').style.display = 'none';
+
+    if (!nombre) { setErr('nombre','Requerido'); ok=false; }
+    if (!/^\d{10}$/.test(cel)) { setErr('cel','Ingresa 10 dígitos sin espacios ni guiones'); ok=false; }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { setErr('email','Correo no válido'); ok=false; }
+    return ok ? { nombre, cel, email } : null;
+  }
+
+  function setErr(f, msg) {
+    document.getElementById('e-'+f).textContent = msg;
+    document.getElementById('f-'+f).classList.add('error');
+  }
+
+  async function submitForm() {
+    const data = validate();
+    if (!data) return;
+
+    // Duplicate check
+    if (clients.find(c => c.cel === data.cel)) {
+      document.getElementById('dup-alert').style.display = 'block';
+      return;
+    }
+
+    const btn = document.getElementById('btn-submit');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner"></span>Guardando...';
+
+    const record = { ...data, fecha: new Date().toLocaleString('es-MX') };
+
+    // Save locally first
+    clients.push(record);
+    saveLocal();
+
+    // Send to both backends in parallel
+    const [notionOk, sheetsOk] = await Promise.all([
+      sendToNotion(record),
+      sendToSheets(record)
+    ]);
+
+    btn.disabled = false;
+    btn.innerHTML = 'Registrarme';
+
+    document.getElementById('form-body').style.display = 'none';
+    document.getElementById('success-state').style.display = 'block';
+
+    const syncMsg = notionOk && sheetsOk
+      ? '✓ Guardado en Notion y Google Sheets'
+      : notionOk ? '✓ Notion · Sheets pendiente'
+      : sheetsOk ? '✓ Sheets · Notion pendiente'
+      : '✓ Guardado localmente';
+
+    showToast(syncMsg);
+  }
+
+  function resetForm() {
+    ['f-nombre','f-cel','f-email'].forEach(id => document.getElementById(id).value = '');
+    ['nombre','cel','email'].forEach(f => {
+      document.getElementById('e-'+f).textContent = '';
+      document.getElementById('f-'+f).classList.remove('error');
+    });
+    document.getElementById('dup-alert').style.display = 'none';
+    document.getElementById('form-body').style.display = 'block';
+    document.getElementById('success-state').style.display = 'none';
+  }
+
+  // ============ NOTION ============
+  async function sendToNotion(r) {
+    const notionBody = {
+      parent: { database_id: NOTION_DB },
+      properties: {
+        Nombre:  { title: [{ text: { content: r.nombre } }] },
+        Celular: { rich_text: [{ text: { content: r.cel } }] },
+        Correo:  { rich_text: [{ text: { content: r.email } }] },
+        Fecha:   { rich_text: [{ text: { content: r.fecha } }] }
+      }
+    };
+    for (const proxy of PROXIES) {
+      try {
+        const url = proxy + encodeURIComponent('https://api.notion.com/v1/pages');
+        const res = await fetch(url, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + NOTION_TOKEN,
+            'Notion-Version': '2022-06-28'
+          },
+          body: JSON.stringify(notionBody)
+        });
+        if (res.ok) return true;
+      } catch(e) { continue; }
+    }
+    return false;
+  }
+
+  // ============ SHEETS ============
+  async function sendToSheets(r) {
+    const payload = { nombre: r.nombre, cel: r.cel, correo: r.email, fecha: r.fecha };
+    // Intentar POST directo primero (Apps Script acepta CORS con redirect)
+    try {
+      const res = await fetch(SHEETS_URL, {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      // no-cors siempre retorna opaque, asumimos ok si no hubo excepción
+      return true;
+    } catch(e) {}
+    // Fallback: via proxies
+    for (const proxy of PROXIES) {
+      try {
+        const res = await fetch(proxy + encodeURIComponent(SHEETS_URL), {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        if (res.ok) return true;
+      } catch(e) { continue; }
+    }
+    return false;
+  }
+
+  // ============ ADMIN TABLE ============
+  function updateStats() {
+    const now = new Date();
+    const today = now.toDateString();
+    const weekAgo = new Date(now - 7*24*3600*1000);
+    document.getElementById('s-total').textContent = clients.length;
+    document.getElementById('s-hoy').textContent = clients.filter(c => new Date(c.fecha).toDateString() === today).length;
+    document.getElementById('s-semana').textContent = clients.filter(c => new Date(c.fecha) >= weekAgo).length;
+  }
+
+  function renderTable() {
+    const q = (document.getElementById('search').value || '').toLowerCase();
+    const filtered = clients
+      .filter(c => c.nombre.toLowerCase().includes(q) || c.cel.includes(q) || c.email.toLowerCase().includes(q))
+      .sort((a,b) => new Date(b.fecha) - new Date(a.fecha));
+
+    const tbody = document.getElementById('tbody');
+    if (!filtered.length) {
+      tbody.innerHTML = '<tr><td colspan="4"><div class="empty">Sin registros aún</div></td></tr>';
+      return;
+    }
+    tbody.innerHTML = filtered.map(c => {
+      const ini = c.nombre.split(' ').slice(0,2).map(w=>w[0]||'').join('').toUpperCase();
+      return `<tr>
+        <td><div class="name-cell"><div class="avatar">${ini}</div>${c.nombre}</div></td>
+        <td>${c.cel}</td>
+        <td style="font-size:12px;">${c.email}</td>
+        <td><span class="date-txt">${c.fecha}</span></td>
+      </tr>`;
+    }).join('');
+  }
+
+  function exportCSV() {
+    if (!clients.length) { showToast('Sin clientes aún'); return; }
+    const rows = [['Nombre','Celular','Correo','Fecha'], ...clients.map(c=>[c.nombre,c.cel,c.email,c.fecha])];
+    const csv = rows.map(r => r.map(v=>`"${v}"`).join(',')).join('\n');
+    const a = document.createElement('a');
+    a.href = 'data:text/csv;charset=utf-8,\uFEFF' + encodeURIComponent(csv);
+    a.download = 'branigans_clientes_' + new Date().toISOString().slice(0,10) + '.csv';
+    a.click();
+  }
+
+  function copySheets() {
+    if (!clients.length) { showToast('Sin clientes aún'); return; }
+    const txt = ['Nombre\tCelular\tCorreo\tFecha', ...clients.map(c=>`${c.nombre}\t${c.cel}\t${c.email}\t${c.fecha}`)].join('\n');
+    navigator.clipboard.writeText(txt).then(() => showToast('¡Copiado! Pega en Google Sheets con Ctrl+V'));
+  }
+
+  // ============ TOAST ============
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 3000);
+  }
+</script>
+</body>
+</html>
