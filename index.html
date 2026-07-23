@@ -653,17 +653,13 @@
 
 <script>
   // ============ CONFIG ============
-  const NOTION_TOKEN = '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';
-  const NOTION_DB    = '351ae760befa80f7b51bc1257689f6fe';
-  const SHEETS_URL   = 'https://script.google.com/macros/s/AKfycbwQaqYlTGDcf-73_0W-NloBbPQJiZg1AIGbNJFPWLf2uVwSwv7Ra2CtPWr4Q9KeDMbY/exec';
-  const ADMIN_PASS   = 'branigans2024';
-  const PROXIES      = [
-    'https://corsproxy.io/?url=',
-    'https://api.allorigins.win/raw?url=',
-    'https://thingproxy.freeboard.io/fetch/'
-  ];
+  // El token de Notion, la contraseña admin y el ID de la base de datos ya
+  // NO viven aquí: están en las Propiedades del script de Apps Script
+  // (ver apps-script/Code.gs). Este HTML solo conoce la URL pública del
+  // backend, que valida todo del lado del servidor.
+  const BACKEND_URL = 'https://script.google.com/macros/s/AKfycbwQaqYlTGDcf-73_0W-NloBbPQJiZg1AIGbNJFPWLf2uVwSwv7Ra2CtPWr4Q9KeDMbY/exec';
 
-  // ============ LOCAL DB ============
+  // ============ LOCAL DB (caché offline) ============
   let clients = JSON.parse(localStorage.getItem('brn_clients') || '[]');
 
   function saveLocal() {
@@ -672,6 +668,7 @@
 
   // ============ VIEWS ============
   let adminAuth = false;
+  let adminPass = '';
 
   function showView(v) {
     document.querySelectorAll('.view').forEach(el => el.classList.remove('active'));
@@ -685,21 +682,53 @@
     }
   }
 
-  function checkPass() {
+  async function checkPass() {
     const val = document.getElementById('admin-pass').value;
-    if (val === ADMIN_PASS) { adminAuth = true; showPanel(); }
-    else { document.getElementById('lock-error').textContent = 'Contraseña incorrecta'; }
+    const errEl = document.getElementById('lock-error');
+    errEl.textContent = '';
+    try {
+      const res = await fetch(BACKEND_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify({ action: 'auth', pass: val })
+      });
+      const out = await res.json();
+      if (out.ok) { adminAuth = true; adminPass = val; showPanel(); }
+      else { errEl.textContent = 'Contraseña incorrecta'; }
+    } catch (e) {
+      errEl.textContent = 'No se pudo verificar. Revisa tu conexión.';
+    }
   }
 
-  function showPanel() {
+  async function showPanel() {
     document.getElementById('admin-lock').style.display = 'none';
     document.getElementById('admin-panel').style.display = 'block';
+    await refreshClients();
     updateStats();
     renderTable();
   }
 
+  async function refreshClients() {
+    const badge = document.getElementById('sync-badge');
+    try {
+      const url = BACKEND_URL + '?action=list&pass=' + encodeURIComponent(adminPass);
+      const res = await fetch(url);
+      const out = await res.json();
+      if (out.ok) {
+        clients = out.clients;
+        saveLocal();
+        badge.innerHTML = '<span class="notion-dot"></span>Sincronizado';
+      } else {
+        badge.innerHTML = '<span class="notion-dot"></span>Modo local';
+      }
+    } catch (e) {
+      badge.innerHTML = '<span class="notion-dot"></span>Modo local';
+    }
+  }
+
   function logout() {
     adminAuth = false;
+    adminPass = '';
     document.getElementById('admin-pass').value = '';
     document.getElementById('lock-error').textContent = '';
     showView('registro');
@@ -749,11 +778,7 @@
     clients.push(record);
     saveLocal();
 
-    // Send to both backends in parallel
-    const [notionOk, sheetsOk] = await Promise.all([
-      sendToNotion(record),
-      sendToSheets(record)
-    ]);
+    const synced = await sendToBackend(record);
 
     btn.disabled = false;
     btn.innerHTML = 'Registrarme';
@@ -761,13 +786,7 @@
     document.getElementById('form-body').style.display = 'none';
     document.getElementById('success-state').style.display = 'block';
 
-    const syncMsg = notionOk && sheetsOk
-      ? '✓ Guardado en Notion y Google Sheets'
-      : notionOk ? '✓ Notion · Sheets pendiente'
-      : sheetsOk ? '✓ Sheets · Notion pendiente'
-      : '✓ Guardado localmente';
-
-    showToast(syncMsg);
+    showToast(synced ? '✓ Guardado y sincronizado' : '✓ Guardado localmente (sin conexión)');
   }
 
   function resetForm() {
@@ -781,61 +800,21 @@
     document.getElementById('success-state').style.display = 'none';
   }
 
-  // ============ NOTION ============
-  async function sendToNotion(r) {
-    const notionBody = {
-      parent: { database_id: NOTION_DB },
-      properties: {
-        Nombre:  { title: [{ text: { content: r.nombre } }] },
-        Celular: { rich_text: [{ text: { content: r.cel } }] },
-        Correo:  { rich_text: [{ text: { content: r.email } }] },
-        Fecha:   { rich_text: [{ text: { content: r.fecha } }] }
-      }
-    };
-    for (const proxy of PROXIES) {
-      try {
-        const url = proxy + encodeURIComponent('https://api.notion.com/v1/pages');
-        const res = await fetch(url, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': 'Bearer ' + NOTION_TOKEN,
-            'Notion-Version': '2022-06-28'
-          },
-          body: JSON.stringify(notionBody)
-        });
-        if (res.ok) return true;
-      } catch(e) { continue; }
-    }
-    return false;
-  }
-
-  // ============ SHEETS ============
-  async function sendToSheets(r) {
+  // ============ BACKEND (Apps Script: guarda en Sheets y reenvía a Notion) ============
+  async function sendToBackend(r) {
     const payload = { nombre: r.nombre, cel: r.cel, correo: r.email, fecha: r.fecha };
-    // Intentar POST directo primero (Apps Script acepta CORS con redirect)
     try {
-      const res = await fetch(SHEETS_URL, {
+      const res = await fetch(BACKEND_URL, {
         method: 'POST',
-        mode: 'no-cors',
-        headers: { 'Content-Type': 'application/json' },
+        // text/plain evita el preflight CORS; Apps Script igual lee el JSON del body.
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
         body: JSON.stringify(payload)
       });
-      // no-cors siempre retorna opaque, asumimos ok si no hubo excepción
-      return true;
-    } catch(e) {}
-    // Fallback: via proxies
-    for (const proxy of PROXIES) {
-      try {
-        const res = await fetch(proxy + encodeURIComponent(SHEETS_URL), {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload)
-        });
-        if (res.ok) return true;
-      } catch(e) { continue; }
+      const out = await res.json();
+      return !!out.ok;
+    } catch (e) {
+      return false;
     }
-    return false;
   }
 
   // ============ ADMIN TABLE ============
