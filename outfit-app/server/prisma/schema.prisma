@@ -1,0 +1,60 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                           String    @id @default(cuid())
+  email                        String    @unique
+  username                     String    @unique
+  passwordHash                 String
+  displayName                  String
+  avatarUrl                    String?
+  bio                          String?
+  favoriteStores               String    @default("[]")
+
+  stripeCustomerId             String?   @unique
+  stripeSubscriptionId         String?   @unique
+  subscriptionStatus           String    @default("inactive")
+  subscriptionCurrentPeriodEnd DateTime?
+
+  createdAt                    DateTime  @default(now())
+
+  posts                        Post[]
+  followers                    Follow[]  @relation("following")
+  following                    Follow[]  @relation("follower")
+}
+
+model Post {
+  id        String    @id @default(cuid())
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  imageUrl  String
+  stores    String    @default("[]")
+  createdAt DateTime  @default(now())
+  garments  Garment[]
+}
+
+model Garment {
+  id     String @id @default(cuid())
+  postId String
+  post   Post   @relation(fields: [postId], references: [id], onDelete: Cascade)
+  name   String
+  colors String @default("[]")
+  order  Int    @default(0)
+}
+
+model Follow {
+  id          String   @id @default(cuid())
+  followerId  String
+  followingId String
+  follower    User     @relation("follower", fields: [followerId], references: [id], onDelete: Cascade)
+  following   User     @relation("following", fields: [followingId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+
+  @@unique([followerId, followingId])
+}

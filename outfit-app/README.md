@@ -1,0 +1,103 @@
+# Branigans Style — app de combinaciones de outfit
+
+App de estilo de vida con suscripción de pago: los usuarios suben una foto de su
+outfit, describen cada prenda y su paleta de colores exacta, y otros usuarios
+pueden descubrir esas combinaciones y seguirlos. No hay likes ni comentarios,
+solo **feed** y **followers**. Todo el contenido (feed, subir outfit, perfiles)
+está detrás de una suscripción de pago con Stripe.
+
+Está separada del sitio estático de Branigans que vive en la raíz del repo
+(`index.html`, `apps-script/`) — esa parte no se toca.
+
+## Estructura
+
+```
+outfit-app/
+  server/   API REST (Node + Express + Prisma/SQLite)
+  web/      Frontend (React + Vite)
+```
+
+## Cómo funciona
+
+- **Cuentas**: registro/login con email + contraseña (JWT).
+- **Suscripción**: al registrarse, el usuario cae en la pantalla de suscripción.
+  Sin suscripción activa (`active`/`trialing` en Stripe) no puede ver el feed,
+  subir outfits ni ver perfiles — el backend lo bloquea con `402` y el
+  frontend redirige a `/suscripcion`.
+- **Outfits**: cada publicación tiene una foto + una lista de prendas, y cada
+  prenda tiene un nombre libre (ej. "playera de algodón cuello redondo") y una
+  paleta de colores (ej. azul claro, azul celeste, azul zafiro), más una lista
+  opcional de tiendas favoritas.
+- **Follows**: seguir/dejar de seguir perfiles, sin reacciones.
+- **Fotos**: se suben a una carpeta de Google Drive vía una cuenta de servicio
+  y se sirven públicamente desde ahí (sin costo de storage adicional).
+
+## 1. Configurar Stripe
+
+1. Crea un producto de suscripción en el [Dashboard de Stripe](https://dashboard.stripe.com/products)
+   con el precio que quieras cobrar (mensual/anual) y copia el **Price ID** (`price_...`).
+2. En **Developers → API keys**, copia la **Secret key** (`sk_test_...` en modo prueba).
+3. En **Developers → Webhooks**, crea un endpoint apuntando a
+   `https://TU_DOMINIO_API/api/stripe/webhook` escuchando estos eventos:
+   - `checkout.session.completed`
+   - `customer.subscription.created`
+   - `customer.subscription.updated`
+   - `customer.subscription.deleted`
+   Copia el **Signing secret** (`whsec_...`).
+4. Para probar en local, usa la [Stripe CLI](https://stripe.com/docs/stripe-cli):
+   ```
+   stripe listen --forward-to localhost:4000/api/stripe/webhook
+   ```
+
+## 2. Configurar Google Drive (almacenamiento de fotos)
+
+1. En [Google Cloud Console](https://console.cloud.google.com/), crea un proyecto
+   y habilita la **Google Drive API**.
+2. Crea una **cuenta de servicio** (Service Account) y descarga su JSON de credenciales.
+3. Crea una carpeta en Google Drive para las fotos y compártela (rol *Editor*)
+   con el email de la cuenta de servicio (`client_email` dentro del JSON).
+4. Copia el ID de la carpeta (está en la URL de Drive) y el JSON completo.
+
+## 3. Levantar el backend
+
+```bash
+cd outfit-app/server
+cp .env.example .env
+# completa .env con tus claves de Stripe, el JSON de la cuenta de servicio y JWT_SECRET
+npm install
+npx prisma migrate dev --name init
+npm run dev
+```
+
+La API queda en `http://localhost:4000`.
+
+## 4. Levantar el frontend
+
+```bash
+cd outfit-app/web
+npm install
+npm run dev
+```
+
+La app queda en `http://localhost:5173` (el proxy de Vite reenvía `/api` al backend).
+
+## 5. Despliegue
+
+- **Backend**: cualquier host de Node (Render, Railway, Fly.io). Cambia
+  `DATABASE_URL` en `prisma/schema.prisma` a Postgres si esperas más de un
+  puñado de usuarios concurrentes — SQLite es suficiente para validar el MVP.
+- **Frontend**: `npm run build` en `web/` genera `dist/`, listo para cualquier
+  hosting estático (Vercel, Netlify, GitHub Pages). Configura la variable
+  `CLIENT_URL` del backend con la URL pública del frontend, y ajusta el proxy
+  de `/api` en el hosting del frontend (o reemplaza `BASE` en `web/src/api.js`
+  por la URL completa de la API).
+- Actualiza `success_url`/`cancel_url` en `server/src/routes/stripe.js` si el
+  frontend queda en otras rutas.
+
+## Notas
+
+- Las contraseñas se guardan como hash con bcrypt; nunca en texto plano.
+- El JWT dura 30 días; no hay refresh tokens (suficiente para un MVP).
+- El estado de suscripción se sincroniza vía webhook de Stripe, no confiando
+  solo en la respuesta del checkout — así se refleja también si el usuario
+  cancela o si un pago falla.
