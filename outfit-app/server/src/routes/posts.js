@@ -2,7 +2,7 @@ const express = require('express');
 const multer = require('multer');
 const prisma = require('../db');
 const { requireAuth, requireActiveSubscription } = require('../middleware/auth');
-const { uploadImage } = require('../lib/googleDrive');
+const { uploadImage } = require('../lib/cloudinary');
 const { post: serializePost } = require('../lib/serialize');
 
 const router = express.Router();

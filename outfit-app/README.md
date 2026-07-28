@@ -29,8 +29,7 @@ outfit-app/
   paleta de colores (ej. azul claro, azul celeste, azul zafiro), más una lista
   opcional de tiendas favoritas.
 - **Follows**: seguir/dejar de seguir perfiles, sin reacciones.
-- **Fotos**: se suben a una carpeta de Google Drive vía una cuenta de servicio
-  y se sirven públicamente desde ahí (sin costo de storage adicional).
+- **Fotos**: se suben a Cloudinary y se sirven públicamente desde ahí.
 
 ## 1. Configurar Stripe
 
@@ -49,21 +48,21 @@ outfit-app/
    stripe listen --forward-to localhost:4000/api/stripe/webhook
    ```
 
-## 2. Configurar Google Drive (almacenamiento de fotos)
+## 2. Configurar Cloudinary (almacenamiento de fotos)
 
-1. En [Google Cloud Console](https://console.cloud.google.com/), crea un proyecto
-   y habilita la **Google Drive API**.
-2. Crea una **cuenta de servicio** (Service Account) y descarga su JSON de credenciales.
-3. Crea una carpeta en Google Drive para las fotos y compártela (rol *Editor*)
-   con el email de la cuenta de servicio (`client_email` dentro del JSON).
-4. Copia el ID de la carpeta (está en la URL de Drive) y el JSON completo.
+1. Crea una cuenta gratis en [cloudinary.com](https://cloudinary.com).
+2. En el Dashboard, copia los tres valores de **Product Environment Credentials**:
+   `Cloud name`, `API Key` y `API Secret`.
+3. Pégalos en `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY` y `CLOUDINARY_API_SECRET`.
+
+Las fotos se suben a la carpeta `branigans-style` dentro de esa cuenta de Cloudinary.
 
 ## 3. Levantar el backend
 
 ```bash
 cd outfit-app/server
 cp .env.example .env
-# completa .env con tus claves de Stripe, el JSON de la cuenta de servicio y JWT_SECRET
+# completa .env con tus claves de Stripe, las de Cloudinary y JWT_SECRET
 npm install
 npx prisma migrate dev --name init
 npm run dev
