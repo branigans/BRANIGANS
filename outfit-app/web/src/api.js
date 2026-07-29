@@ -43,6 +43,9 @@ export const api = {
   deletePost: (id) => request(`/posts/${id}`, { method: 'DELETE' }),
   likePost: (id) => request(`/posts/${id}/like`, { method: 'POST' }),
   unlikePost: (id) => request(`/posts/${id}/like`, { method: 'DELETE' }),
+  savePost: (id) => request(`/posts/${id}/save`, { method: 'POST' }),
+  unsavePost: (id) => request(`/posts/${id}/save`, { method: 'DELETE' }),
+  savedPosts: () => request('/posts/saved'),
 
   profile: (username) => request(`/users/${username}`),
   updateMe: (payload) => request('/users/me', { method: 'PATCH', body: payload }),
@@ -50,6 +53,11 @@ export const api = {
   follow: (username) => request(`/users/${username}/follow`, { method: 'POST' }),
   unfollow: (username) => request(`/users/${username}/follow`, { method: 'DELETE' }),
   searchUsers: (q) => request(`/users/search?q=${encodeURIComponent(q)}`),
+
+  notifications: () => request('/notifications'),
+  markNotificationsRead: () => request('/notifications/read-all', { method: 'POST' }),
+
+  adminStats: () => request('/admin/stats'),
 
   createCheckoutSession: () => request('/stripe/create-checkout-session', { method: 'POST' }),
   billingPortal: () => request('/stripe/portal')

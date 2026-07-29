@@ -8,6 +8,9 @@ import Feed from './pages/Feed.jsx';
 import Upload from './pages/Upload.jsx';
 import Profile from './pages/Profile.jsx';
 import Search from './pages/Search.jsx';
+import Saved from './pages/Saved.jsx';
+import Notifications from './pages/Notifications.jsx';
+import Admin from './pages/Admin.jsx';
 
 function RequireAuth({ children }) {
   const { user, loading } = useAuth();
@@ -20,6 +23,13 @@ function RequireSubscription({ children }) {
   const { isSubscribed, loading } = useAuth();
   if (loading) return <div className="page-loading">Cargando…</div>;
   if (!isSubscribed) return <Navigate to="/suscripcion" replace />;
+  return children;
+}
+
+function RequireAdmin({ children }) {
+  const { user, loading } = useAuth();
+  if (loading) return <div className="page-loading">Cargando…</div>;
+  if (!user.isAdmin) return <Navigate to="/" replace />;
   return children;
 }
 
@@ -87,6 +97,38 @@ export default function App() {
               <RequireAuth>
                 <RequireSubscription>
                   <Profile />
+                </RequireSubscription>
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/guardados"
+            element={
+              <RequireAuth>
+                <RequireSubscription>
+                  <Saved />
+                </RequireSubscription>
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/notificaciones"
+            element={
+              <RequireAuth>
+                <RequireSubscription>
+                  <Notifications />
+                </RequireSubscription>
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/admin"
+            element={
+              <RequireAuth>
+                <RequireSubscription>
+                  <RequireAdmin>
+                    <Admin />
+                  </RequireAdmin>
                 </RequireSubscription>
               </RequireAuth>
             }

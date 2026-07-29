@@ -79,7 +79,8 @@ router.get('/:username', async (req, res) => {
         user: true,
         garments: true,
         _count: { select: { likes: true } },
-        likes: { where: { userId: req.user.id }, select: { id: true } }
+        likes: { where: { userId: req.user.id }, select: { id: true } },
+        saves: { where: { userId: req.user.id }, select: { id: true } }
       }
     })
   ]);
@@ -100,11 +101,16 @@ router.post('/:username/follow', async (req, res) => {
   if (!target) return res.status(404).json({ error: 'Usuario no encontrado' });
   if (target.id === req.user.id) return res.status(400).json({ error: 'No puedes seguirte a ti mismo' });
 
-  await prisma.follow.upsert({
-    where: { followerId_followingId: { followerId: req.user.id, followingId: target.id } },
-    create: { followerId: req.user.id, followingId: target.id },
-    update: {}
+  const alreadyFollowing = await prisma.follow.findUnique({
+    where: { followerId_followingId: { followerId: req.user.id, followingId: target.id } }
   });
+
+  if (!alreadyFollowing) {
+    await prisma.follow.create({ data: { followerId: req.user.id, followingId: target.id } });
+    await prisma.notification.create({
+      data: { userId: target.id, actorId: req.user.id, type: 'follow' }
+    });
+  }
 
   res.json({ ok: true });
 });

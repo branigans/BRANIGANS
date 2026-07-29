@@ -50,6 +50,15 @@ export default function Feed() {
     }
   };
 
+  const onToggleSave = async (id, currentlySaved) => {
+    setPosts((prev) => prev.map((p) => (p.id === id ? { ...p, savedByMe: !currentlySaved } : p)));
+    try {
+      currentlySaved ? await api.unsavePost(id) : await api.savePost(id);
+    } catch {
+      setPosts((prev) => prev.map((p) => (p.id === id ? { ...p, savedByMe: currentlySaved } : p)));
+    }
+  };
+
   return (
     <div className="feed-wrap">
       <h1 className="feed-title">Outfits recientes</h1>
@@ -63,6 +72,7 @@ export default function Feed() {
             canDelete={user && p.author.id === user.id}
             onDelete={onDelete}
             onToggleLike={onToggleLike}
+            onToggleSave={onToggleSave}
           />
         ))}
       </div>

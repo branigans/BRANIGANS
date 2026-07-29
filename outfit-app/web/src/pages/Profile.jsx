@@ -88,6 +88,15 @@ export default function Profile({ own = false }) {
     }
   };
 
+  const onToggleSave = async (id, currentlySaved) => {
+    setPosts((prev) => prev.map((p) => (p.id === id ? { ...p, savedByMe: !currentlySaved } : p)));
+    try {
+      currentlySaved ? await api.unsavePost(id) : await api.savePost(id);
+    } catch {
+      setPosts((prev) => prev.map((p) => (p.id === id ? { ...p, savedByMe: currentlySaved } : p)));
+    }
+  };
+
   const openBillingPortal = async () => {
     setPortalBusy(true);
     try {
@@ -168,7 +177,14 @@ export default function Profile({ own = false }) {
 
       <div className="post-grid">
         {posts.map((p) => (
-          <PostCard key={p.id} post={p} canDelete={isOwn} onDelete={onDelete} onToggleLike={onToggleLike} />
+          <PostCard
+            key={p.id}
+            post={p}
+            canDelete={isOwn}
+            onDelete={onDelete}
+            onToggleLike={onToggleLike}
+            onToggleSave={onToggleSave}
+          />
         ))}
       </div>
       {posts.length === 0 && <p className="empty-state">Aún no hay outfits publicados.</p>}

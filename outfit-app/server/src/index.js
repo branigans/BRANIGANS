@@ -6,6 +6,8 @@ const morgan = require('morgan');
 const authRoutes = require('./routes/auth');
 const postsRoutes = require('./routes/posts');
 const usersRoutes = require('./routes/users');
+const notificationsRoutes = require('./routes/notifications');
+const adminRoutes = require('./routes/admin');
 const { router: stripeRoutes, webhookHandler } = require('./routes/stripe');
 
 const app = express();
@@ -23,6 +25,8 @@ app.get('/api/health', (req, res) => res.json({ ok: true }));
 app.use('/api/auth', authRoutes);
 app.use('/api/posts', postsRoutes);
 app.use('/api/users', usersRoutes);
+app.use('/api/notifications', notificationsRoutes);
+app.use('/api/admin', adminRoutes);
 app.use('/api/stripe', stripeRoutes);
 
 app.use((err, req, res, next) => {

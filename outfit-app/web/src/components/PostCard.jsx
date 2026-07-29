@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
 import ColorTags from './ColorTags.jsx';
 
-export default function PostCard({ post, onDelete, canDelete, onToggleLike }) {
+export default function PostCard({ post, onDelete, canDelete, onToggleLike, onToggleSave }) {
   return (
     <article className="post-card">
       <img className="post-image" src={post.imageUrl} alt="Outfit" loading="lazy" />
@@ -11,14 +11,24 @@ export default function PostCard({ post, onDelete, canDelete, onToggleLike }) {
             {post.author.avatarUrl && <img className="post-author-avatar" src={post.author.avatarUrl} alt="" />}
             <span>@{post.author.username}</span>
           </Link>
-          <button
-            className={`like-btn ${post.likedByMe ? 'liked' : ''}`}
-            onClick={() => onToggleLike(post.id, post.likedByMe)}
-            aria-pressed={post.likedByMe}
-          >
-            <span aria-hidden="true">{post.likedByMe ? '♥' : '♡'}</span>
-            <span>{post.likesCount}</span>
-          </button>
+          <div className="post-actions">
+            <button
+              className={`like-btn ${post.likedByMe ? 'liked' : ''}`}
+              onClick={() => onToggleLike(post.id, post.likedByMe)}
+              aria-pressed={post.likedByMe}
+            >
+              <span aria-hidden="true">{post.likedByMe ? '♥' : '♡'}</span>
+              <span>{post.likesCount}</span>
+            </button>
+            <button
+              className={`save-btn ${post.savedByMe ? 'saved' : ''}`}
+              onClick={() => onToggleSave(post.id, post.savedByMe)}
+              aria-pressed={post.savedByMe}
+            >
+              <span aria-hidden="true">🔖</span>
+              <span>{post.savedByMe ? 'Guardado' : 'Guardar'}</span>
+            </button>
+          </div>
         </div>
 
         <ul className="garment-list">

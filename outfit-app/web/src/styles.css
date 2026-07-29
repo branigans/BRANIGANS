@@ -90,6 +90,25 @@ body {
 .search-result div { display: flex; flex-direction: column; }
 .search-result span { font-size: 13px; color: var(--text-light); }
 
+.nav-btn-bell { position: relative; padding: 6px 12px; }
+.notification-badge {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  background: var(--error);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1;
+  min-width: 16px;
+  height: 16px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 3px;
+}
+
 .nav { display: flex; gap: 4px; flex-wrap: wrap; }
 
 .nav-btn {
@@ -277,7 +296,9 @@ body {
 
 .post-author-avatar { width: 24px; height: 24px; border-radius: 50%; object-fit: cover; }
 
-.like-btn {
+.post-actions { display: flex; align-items: center; gap: 2px; flex: none; }
+
+.like-btn, .save-btn {
   display: flex;
   align-items: center;
   gap: 5px;
@@ -290,10 +311,11 @@ body {
   border-radius: 20px;
   flex: none;
 }
-.like-btn:hover { background: var(--cream-mid); }
+.like-btn:hover, .save-btn:hover { background: var(--cream-mid); }
 .like-btn span:first-child { font-size: 17px; line-height: 1; color: var(--text-light); }
 .like-btn.liked span:first-child { color: var(--error); }
 .like-btn.liked { color: var(--error); }
+.save-btn.saved { color: var(--gold); font-weight: 600; }
 
 .garment-list { list-style: none; display: flex; flex-direction: column; gap: 8px; margin-bottom: 8px; }
 .garment-name { display: block; font-size: 13px; color: var(--text-mid); margin-bottom: 4px; }
@@ -454,3 +476,57 @@ body {
   .profile-info { width: 100%; }
   .post-grid { gap: 14px; }
 }
+
+/* NOTIFICATIONS */
+.notification-list { list-style: none; display: flex; flex-direction: column; gap: 4px; }
+
+.notification-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  border-radius: 8px;
+  background: var(--white);
+  border: 1px solid var(--border);
+}
+.notification-item.unread { background: var(--cream-mid); border-color: var(--gold-light); }
+
+.notification-text { flex: 1; display: flex; flex-direction: column; gap: 2px; font-size: 14px; color: var(--text); }
+.notification-text a { color: var(--gold); text-decoration: none; }
+.notification-time { font-size: 12px; color: var(--text-light); }
+.notification-thumb { width: 44px; height: 44px; border-radius: 6px; object-fit: cover; flex: none; }
+
+/* ADMIN */
+.admin-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 14px;
+  margin-bottom: 32px;
+}
+.admin-stat-card {
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.admin-stat-value { font-family: 'Playfair Display', serif; font-size: 30px; color: var(--gold); font-variant-numeric: tabular-nums; }
+.admin-stat-label { font-size: 12px; color: var(--text-light); text-transform: uppercase; letter-spacing: 0.03em; }
+
+.admin-subtitle { font-family: 'Playfair Display', serif; font-size: 19px; margin-bottom: 14px; }
+
+.admin-top-list { list-style: none; display: flex; flex-direction: column; gap: 8px; }
+.admin-top-list li {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--white);
+}
+.admin-top-list img { width: 44px; height: 44px; border-radius: 6px; object-fit: cover; }
+.admin-top-list div { display: flex; flex-direction: column; }
+.admin-top-list span { font-size: 12px; color: var(--text-light); }

@@ -22,6 +22,7 @@ function me(user) {
     avatarUrl: user.avatarUrl,
     bio: user.bio,
     favoriteStores: JSON.parse(user.favoriteStores || '[]'),
+    isAdmin: !!user.isAdmin,
     subscriptionStatus: user.subscriptionStatus,
     subscriptionCurrentPeriodEnd: user.subscriptionCurrentPeriodEnd
   };
@@ -45,8 +46,25 @@ function post(p) {
         }
       : undefined,
     likesCount: p._count ? p._count.likes : 0,
-    likedByMe: Array.isArray(p.likes) ? p.likes.length > 0 : false
+    likedByMe: Array.isArray(p.likes) ? p.likes.length > 0 : false,
+    savedByMe: Array.isArray(p.saves) ? p.saves.length > 0 : false
   };
 }
 
-module.exports = { publicUser, me, post };
+function notification(n) {
+  return {
+    id: n.id,
+    type: n.type,
+    read: n.read,
+    createdAt: n.createdAt,
+    actor: {
+      id: n.actor.id,
+      username: n.actor.username,
+      displayName: n.actor.displayName,
+      avatarUrl: n.actor.avatarUrl
+    },
+    post: n.post ? { id: n.post.id, imageUrl: n.post.imageUrl } : null
+  };
+}
+
+module.exports = { publicUser, me, post, notification };

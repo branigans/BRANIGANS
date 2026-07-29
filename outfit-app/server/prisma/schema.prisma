@@ -16,6 +16,7 @@ model User {
   avatarUrl                    String?
   bio                          String?
   favoriteStores               String    @default("[]")
+  isAdmin                      Boolean   @default(false)
 
   stripeCustomerId             String?   @unique
   stripeSubscriptionId         String?   @unique
@@ -25,20 +26,49 @@ model User {
   createdAt                    DateTime  @default(now())
 
   posts                        Post[]
-  followers                    Follow[]  @relation("following")
-  following                    Follow[]  @relation("follower")
+  followers                    Follow[]       @relation("following")
+  following                    Follow[]       @relation("follower")
   likes                        Like[]
+  saves                        Save[]
+  notificationsReceived        Notification[] @relation("recipient")
+  notificationsSent            Notification[] @relation("actor")
 }
 
 model Post {
-  id        String    @id @default(cuid())
+  id            String         @id @default(cuid())
+  userId        String
+  user          User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  imageUrl      String
+  stores        String         @default("[]")
+  createdAt     DateTime       @default(now())
+  garments      Garment[]
+  likes         Like[]
+  saves         Save[]
+  notifications Notification[]
+}
+
+model Save {
+  id        String   @id @default(cuid())
+  postId    String
   userId    String
-  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  imageUrl  String
-  stores    String    @default("[]")
-  createdAt DateTime  @default(now())
-  garments  Garment[]
-  likes     Like[]
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@unique([postId, userId])
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation("recipient", fields: [userId], references: [id], onDelete: Cascade)
+  actorId   String
+  actor     User     @relation("actor", fields: [actorId], references: [id], onDelete: Cascade)
+  type      String
+  postId    String?
+  post      Post?    @relation(fields: [postId], references: [id], onDelete: Cascade)
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
 }
 
 model Like {

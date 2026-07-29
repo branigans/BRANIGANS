@@ -21,7 +21,8 @@ function postIncludeFor(userId) {
     user: true,
     garments: true,
     _count: { select: { likes: true } },
-    likes: { where: { userId }, select: { id: true } }
+    likes: { where: { userId }, select: { id: true } },
+    saves: { where: { userId }, select: { id: true } }
   };
 }
 
@@ -40,6 +41,15 @@ router.get('/', async (req, res) => {
 
   const nextCursor = posts.length === take ? posts[posts.length - 1].id : null;
   res.json({ posts: posts.map(serializePost), nextCursor });
+});
+
+router.get('/saved', async (req, res) => {
+  const saves = await prisma.save.findMany({
+    where: { userId: req.user.id },
+    orderBy: { createdAt: 'desc' },
+    include: { post: { include: postIncludeFor(req.user.id) } }
+  });
+  res.json({ posts: saves.map((s) => serializePost(s.post)) });
 });
 
 router.post('/', upload.single('image'), async (req, res) => {
@@ -97,11 +107,18 @@ router.post('/:id/like', async (req, res) => {
   const existing = await prisma.post.findUnique({ where: { id: req.params.id } });
   if (!existing) return res.status(404).json({ error: 'No encontrado' });
 
-  await prisma.like.upsert({
-    where: { postId_userId: { postId: req.params.id, userId: req.user.id } },
-    create: { postId: req.params.id, userId: req.user.id },
-    update: {}
+  const alreadyLiked = await prisma.like.findUnique({
+    where: { postId_userId: { postId: req.params.id, userId: req.user.id } }
   });
+
+  if (!alreadyLiked) {
+    await prisma.like.create({ data: { postId: req.params.id, userId: req.user.id } });
+    if (existing.userId !== req.user.id) {
+      await prisma.notification.create({
+        data: { userId: existing.userId, actorId: req.user.id, type: 'like', postId: req.params.id }
+      });
+    }
+  }
 
   const likesCount = await prisma.like.count({ where: { postId: req.params.id } });
   res.json({ likesCount, likedByMe: true });
@@ -111,6 +128,24 @@ router.delete('/:id/like', async (req, res) => {
   await prisma.like.deleteMany({ where: { postId: req.params.id, userId: req.user.id } });
   const likesCount = await prisma.like.count({ where: { postId: req.params.id } });
   res.json({ likesCount, likedByMe: false });
+});
+
+router.post('/:id/save', async (req, res) => {
+  const existing = await prisma.post.findUnique({ where: { id: req.params.id } });
+  if (!existing) return res.status(404).json({ error: 'No encontrado' });
+
+  await prisma.save.upsert({
+    where: { postId_userId: { postId: req.params.id, userId: req.user.id } },
+    create: { postId: req.params.id, userId: req.user.id },
+    update: {}
+  });
+
+  res.json({ savedByMe: true });
+});
+
+router.delete('/:id/save', async (req, res) => {
+  await prisma.save.deleteMany({ where: { postId: req.params.id, userId: req.user.id } });
+  res.json({ savedByMe: false });
 });
 
 router.delete('/:id', async (req, res) => {

@@ -29,4 +29,9 @@ function requireActiveSubscription(req, res, next) {
   next();
 }
 
-module.exports = { signToken, requireAuth, requireActiveSubscription };
+function requireAdmin(req, res, next) {
+  if (!req.user.isAdmin) return res.status(403).json({ error: 'No autorizado' });
+  next();
+}
+
+module.exports = { signToken, requireAuth, requireActiveSubscription, requireAdmin };

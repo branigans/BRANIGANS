@@ -1,16 +1,27 @@
-import { NavLink, useNavigate } from 'react-router-dom';
-import { useState } from 'react';
+import { NavLink, useNavigate, useLocation } from 'react-router-dom';
+import { useEffect, useState } from 'react';
 import { useAuth } from '../context/AuthContext.jsx';
+import { api } from '../api.js';
 
 export default function Header() {
   const { user, isSubscribed, logout } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const [query, setQuery] = useState('');
+  const [unreadCount, setUnreadCount] = useState(0);
 
   const onSearch = (e) => {
     e.preventDefault();
     if (query.trim()) navigate(`/buscar?q=${encodeURIComponent(query.trim())}`);
   };
+
+  useEffect(() => {
+    if (!user || !isSubscribed) return;
+    api
+      .notifications()
+      .then((data) => setUnreadCount(data.unreadCount))
+      .catch(() => {});
+  }, [user, isSubscribed, location.pathname]);
 
   return (
     <header className="header">
@@ -41,6 +52,17 @@ export default function Header() {
               <NavLink to="/perfil" className={({ isActive }) => `nav-btn ${isActive ? 'active' : ''}`}>
                 Mi perfil
               </NavLink>
+              <NavLink to="/guardados" className={({ isActive }) => `nav-btn ${isActive ? 'active' : ''}`}>
+                Guardados
+              </NavLink>
+              <NavLink to="/notificaciones" className={({ isActive }) => `nav-btn nav-btn-bell ${isActive ? 'active' : ''}`}>
+                🔔{unreadCount > 0 && <span className="notification-badge">{unreadCount}</span>}
+              </NavLink>
+              {user.isAdmin && (
+                <NavLink to="/admin" className={({ isActive }) => `nav-btn ${isActive ? 'active' : ''}`}>
+                  Panel
+                </NavLink>
+              )}
             </>
           )}
           {!isSubscribed && (
