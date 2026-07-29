@@ -13,7 +13,7 @@ Está separada del sitio estático de Branigans que vive en la raíz del repo
 
 ```
 outfit-app/
-  server/   API REST (Node + Express + Prisma/SQLite)
+  server/   API REST (Node + Express + Prisma/Postgres)
   web/      Frontend (React + Vite)
 ```
 
@@ -57,12 +57,25 @@ outfit-app/
 
 Las fotos se suben a la carpeta `branigans-style` dentro de esa cuenta de Cloudinary.
 
-## 3. Levantar el backend
+## 3. Configurar la base de datos (Postgres)
+
+La app usa Postgres para que los datos **no se borren** en cada despliegue
+(a diferencia de un archivo SQLite local, que vive en el disco temporal del
+servidor y desaparece con cada redeploy).
+
+- **Render**: crea un recurso "PostgreSQL" nuevo, copia su "Internal Database URL".
+- **Railway**: en el mismo proyecto, "New" → "Database" → "Add PostgreSQL". Railway
+  genera la variable automáticamente; en el servicio del backend, agrega
+  `DATABASE_URL` referenciando esa base (Railway te deja seleccionarla directo).
+
+Pega esa URL de conexión en `DATABASE_URL`.
+
+## 4. Levantar el backend
 
 ```bash
 cd outfit-app/server
 cp .env.example .env
-# completa .env con tus claves de Stripe, las de Cloudinary y JWT_SECRET
+# completa .env con tu DATABASE_URL de Postgres, tus claves de Stripe, las de Cloudinary y JWT_SECRET
 npm install
 npx prisma migrate dev --name init
 npm run dev
@@ -70,7 +83,7 @@ npm run dev
 
 La API queda en `http://localhost:4000`.
 
-## 4. Levantar el frontend
+## 5. Levantar el frontend
 
 ```bash
 cd outfit-app/web
@@ -80,11 +93,10 @@ npm run dev
 
 La app queda en `http://localhost:5173` (el proxy de Vite reenvía `/api` al backend).
 
-## 5. Despliegue
+## 6. Despliegue
 
-- **Backend**: cualquier host de Node (Render, Railway, Fly.io). Cambia
-  `DATABASE_URL` en `prisma/schema.prisma` a Postgres si esperas más de un
-  puñado de usuarios concurrentes — SQLite es suficiente para validar el MVP.
+- **Backend**: cualquier host de Node (Render, Railway, Fly.io) con el recurso
+  de Postgres del paso 3 conectado.
 - **Frontend**: `npm run build` en `web/` genera `dist/`, listo para cualquier
   hosting estático (Vercel, Netlify, GitHub Pages). Configura la variable
   `CLIENT_URL` del backend con la URL pública del frontend, y ajusta el proxy
