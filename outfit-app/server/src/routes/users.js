@@ -39,6 +39,28 @@ router.post('/me/avatar', upload.single('image'), async (req, res) => {
   res.json({ user: me(updated) });
 });
 
+router.get('/search', async (req, res) => {
+  const q = String(req.query.q || '').trim();
+  if (!q) return res.json({ users: [] });
+
+  const users = await prisma.user.findMany({
+    where: {
+      OR: [{ username: { contains: q.toLowerCase() } }, { displayName: { contains: q } }]
+    },
+    take: 15,
+    orderBy: { username: 'asc' }
+  });
+
+  res.json({
+    users: users.map((u) => ({
+      id: u.id,
+      username: u.username,
+      displayName: u.displayName,
+      avatarUrl: u.avatarUrl
+    }))
+  });
+});
+
 router.get('/:username', async (req, res) => {
   const user = await prisma.user.findUnique({ where: { username: req.params.username.toLowerCase() } });
   if (!user) return res.status(404).json({ error: 'Usuario no encontrado' });
@@ -53,7 +75,12 @@ router.get('/:username', async (req, res) => {
     prisma.post.findMany({
       where: { userId: user.id },
       orderBy: { createdAt: 'desc' },
-      include: { user: true, garments: true }
+      include: {
+        user: true,
+        garments: true,
+        _count: { select: { likes: true } },
+        likes: { where: { userId: req.user.id }, select: { id: true } }
+      }
     })
   ]);
 

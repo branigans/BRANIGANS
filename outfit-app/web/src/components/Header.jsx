@@ -1,8 +1,16 @@
-import { NavLink } from 'react-router-dom';
+import { NavLink, useNavigate } from 'react-router-dom';
+import { useState } from 'react';
 import { useAuth } from '../context/AuthContext.jsx';
 
 export default function Header() {
   const { user, isSubscribed, logout } = useAuth();
+  const navigate = useNavigate();
+  const [query, setQuery] = useState('');
+
+  const onSearch = (e) => {
+    e.preventDefault();
+    if (query.trim()) navigate(`/buscar?q=${encodeURIComponent(query.trim())}`);
+  };
 
   return (
     <header className="header">
@@ -10,6 +18,16 @@ export default function Header() {
         <span className="brand-name">BRANIGANS STYLE</span>
         <span className="brand-tagline">combina tu outfit</span>
       </div>
+      {user && isSubscribed && (
+        <form className="search-form" onSubmit={onSearch}>
+          <input
+            type="search"
+            placeholder="Buscar usuarios…"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+          />
+        </form>
+      )}
       {user && (
         <nav className="nav">
           {isSubscribed && (

@@ -7,6 +7,7 @@ import Subscribe from './pages/Subscribe.jsx';
 import Feed from './pages/Feed.jsx';
 import Upload from './pages/Upload.jsx';
 import Profile from './pages/Profile.jsx';
+import Search from './pages/Search.jsx';
 
 function RequireAuth({ children }) {
   const { user, loading } = useAuth();
@@ -66,6 +67,16 @@ export default function App() {
               <RequireAuth>
                 <RequireSubscription>
                   <Profile own />
+                </RequireSubscription>
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/buscar"
+            element={
+              <RequireAuth>
+                <RequireSubscription>
+                  <Search />
                 </RequireSubscription>
               </RequireAuth>
             }

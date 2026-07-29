@@ -43,7 +43,9 @@ function post(p) {
           displayName: p.user.displayName,
           avatarUrl: p.user.avatarUrl
         }
-      : undefined
+      : undefined,
+    likesCount: p._count ? p._count.likes : 0,
+    likedByMe: Array.isArray(p.likes) ? p.likes.length > 0 : false
   };
 }
 

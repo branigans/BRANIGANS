@@ -41,12 +41,15 @@ export const api = {
   feed: (cursor) => request(`/posts${cursor ? `?cursor=${cursor}` : ''}`),
   createPost: (formData) => request('/posts', { method: 'POST', body: formData, isForm: true }),
   deletePost: (id) => request(`/posts/${id}`, { method: 'DELETE' }),
+  likePost: (id) => request(`/posts/${id}/like`, { method: 'POST' }),
+  unlikePost: (id) => request(`/posts/${id}/like`, { method: 'DELETE' }),
 
   profile: (username) => request(`/users/${username}`),
   updateMe: (payload) => request('/users/me', { method: 'PATCH', body: payload }),
   uploadAvatar: (formData) => request('/users/me/avatar', { method: 'POST', body: formData, isForm: true }),
   follow: (username) => request(`/users/${username}/follow`, { method: 'POST' }),
   unfollow: (username) => request(`/users/${username}/follow`, { method: 'DELETE' }),
+  searchUsers: (q) => request(`/users/search?q=${encodeURIComponent(q)}`),
 
   createCheckoutSession: () => request('/stripe/create-checkout-session', { method: 'POST' }),
   billingPortal: () => request('/stripe/portal')

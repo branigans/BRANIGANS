@@ -33,6 +33,23 @@ export default function Feed() {
     setPosts((prev) => prev.filter((p) => p.id !== id));
   };
 
+  const onToggleLike = async (id, currentlyLiked) => {
+    setPosts((prev) =>
+      prev.map((p) =>
+        p.id === id ? { ...p, likedByMe: !currentlyLiked, likesCount: p.likesCount + (currentlyLiked ? -1 : 1) } : p
+      )
+    );
+    try {
+      currentlyLiked ? await api.unlikePost(id) : await api.likePost(id);
+    } catch {
+      setPosts((prev) =>
+        prev.map((p) =>
+          p.id === id ? { ...p, likedByMe: currentlyLiked, likesCount: p.likesCount + (currentlyLiked ? 1 : -1) } : p
+        )
+      );
+    }
+  };
+
   return (
     <div className="feed-wrap">
       <h1 className="feed-title">Outfits recientes</h1>
@@ -40,7 +57,13 @@ export default function Feed() {
       {posts.length === 0 && !loading && <p className="empty-state">Todavía no hay outfits publicados. ¡Sé el primero!</p>}
       <div className="post-grid">
         {posts.map((p) => (
-          <PostCard key={p.id} post={p} canDelete={user && p.author.id === user.id} onDelete={onDelete} />
+          <PostCard
+            key={p.id}
+            post={p}
+            canDelete={user && p.author.id === user.id}
+            onDelete={onDelete}
+            onToggleLike={onToggleLike}
+          />
         ))}
       </div>
       {cursor && (

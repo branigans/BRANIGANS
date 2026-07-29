@@ -16,7 +16,14 @@ const upload = multer({
   }
 });
 
-const postInclude = { user: true, garments: true };
+function postIncludeFor(userId) {
+  return {
+    user: true,
+    garments: true,
+    _count: { select: { likes: true } },
+    likes: { where: { userId }, select: { id: true } }
+  };
+}
 
 router.use(requireAuth, requireActiveSubscription);
 
@@ -28,7 +35,7 @@ router.get('/', async (req, res) => {
     take,
     ...(cursor ? { skip: 1, cursor: { id: cursor } } : {}),
     orderBy: { createdAt: 'desc' },
-    include: postInclude
+    include: postIncludeFor(req.user.id)
   });
 
   const nextCursor = posts.length === take ? posts[posts.length - 1].id : null;
@@ -76,7 +83,7 @@ router.post('/', upload.single('image'), async (req, res) => {
           }))
         }
       },
-      include: postInclude
+      include: postIncludeFor(req.user.id)
     });
 
     res.status(201).json({ post: serializePost(created) });
@@ -84,6 +91,26 @@ router.post('/', upload.single('image'), async (req, res) => {
     console.error('[posts] create', err);
     res.status(500).json({ error: 'No se pudo publicar el outfit' });
   }
+});
+
+router.post('/:id/like', async (req, res) => {
+  const existing = await prisma.post.findUnique({ where: { id: req.params.id } });
+  if (!existing) return res.status(404).json({ error: 'No encontrado' });
+
+  await prisma.like.upsert({
+    where: { postId_userId: { postId: req.params.id, userId: req.user.id } },
+    create: { postId: req.params.id, userId: req.user.id },
+    update: {}
+  });
+
+  const likesCount = await prisma.like.count({ where: { postId: req.params.id } });
+  res.json({ likesCount, likedByMe: true });
+});
+
+router.delete('/:id/like', async (req, res) => {
+  await prisma.like.deleteMany({ where: { postId: req.params.id, userId: req.user.id } });
+  const likesCount = await prisma.like.count({ where: { postId: req.params.id } });
+  res.json({ likesCount, likedByMe: false });
 });
 
 router.delete('/:id', async (req, res) => {

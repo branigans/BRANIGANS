@@ -71,6 +71,23 @@ export default function Profile({ own = false }) {
     setPosts((prev) => prev.filter((p) => p.id !== id));
   };
 
+  const onToggleLike = async (id, currentlyLiked) => {
+    setPosts((prev) =>
+      prev.map((p) =>
+        p.id === id ? { ...p, likedByMe: !currentlyLiked, likesCount: p.likesCount + (currentlyLiked ? -1 : 1) } : p
+      )
+    );
+    try {
+      currentlyLiked ? await api.unlikePost(id) : await api.likePost(id);
+    } catch {
+      setPosts((prev) =>
+        prev.map((p) =>
+          p.id === id ? { ...p, likedByMe: currentlyLiked, likesCount: p.likesCount + (currentlyLiked ? 1 : -1) } : p
+        )
+      );
+    }
+  };
+
   const openBillingPortal = async () => {
     setPortalBusy(true);
     try {
@@ -151,7 +168,7 @@ export default function Profile({ own = false }) {
 
       <div className="post-grid">
         {posts.map((p) => (
-          <PostCard key={p.id} post={p} canDelete={isOwn} onDelete={onDelete} />
+          <PostCard key={p.id} post={p} canDelete={isOwn} onDelete={onDelete} onToggleLike={onToggleLike} />
         ))}
       </div>
       {posts.length === 0 && <p className="empty-state">Aún no hay outfits publicados.</p>}
