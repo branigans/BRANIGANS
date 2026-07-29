@@ -345,6 +345,56 @@ body {
 .tag-field label { margin-bottom: 0; }
 .tag-field input { margin-bottom: 8px; }
 
+.color-picker-label {
+  display: block;
+  font-size: 13px;
+  color: var(--text-mid);
+  margin-bottom: 8px;
+}
+
+.color-picker { margin-bottom: 8px; }
+
+.color-swatch-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(30px, 1fr));
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.swatch {
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  border: 1px solid rgba(0, 0, 0, 0.15);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}
+
+.swatch.selected { outline: 2px solid var(--gold); outline-offset: 2px; }
+.swatch-check { color: #fff; text-shadow: 0 0 2px rgba(0, 0, 0, 0.6); font-size: 13px; }
+
+.custom-color-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.custom-color-row input[type='color'] {
+  width: 40px;
+  height: 34px;
+  padding: 2px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: none;
+  cursor: pointer;
+}
+
+.custom-color-row .btn-secondary { margin-top: 0; }
+
 .tag-list { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; }
 .tag-chip {
   display: inline-flex;

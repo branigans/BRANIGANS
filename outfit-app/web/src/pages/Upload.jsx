@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../api.js';
-import ColorTags from '../components/ColorTags.jsx';
+import ColorPicker from '../components/ColorPicker.jsx';
 
 function TagField({ label, placeholder, values, onChange }) {
   const [draft, setDraft] = useState('');
@@ -116,13 +116,8 @@ export default function Upload() {
                 </button>
               )}
             </div>
-            <TagField
-              label="Colores (Enter para agregar)"
-              placeholder="ej. azul celeste"
-              values={g.colors}
-              onChange={(colors) => updateGarment(i, { colors })}
-            />
-            {g.colors.length > 0 && <ColorTags colors={g.colors} />}
+            <label className="color-picker-label">Colores</label>
+            <ColorPicker colors={g.colors} onChange={(colors) => updateGarment(i, { colors })} />
           </div>
         ))}
 

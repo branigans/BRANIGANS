@@ -52,5 +52,7 @@ export const COLOR_MAP = {
 };
 
 export function colorHex(name) {
-  return COLOR_MAP[name.trim().toLowerCase()] || null;
+  const trimmed = name.trim();
+  if (/^#([0-9a-f]{3}|[0-9a-f]{6})$/i.test(trimmed)) return trimmed;
+  return COLOR_MAP[trimmed.toLowerCase()] || null;
 }
