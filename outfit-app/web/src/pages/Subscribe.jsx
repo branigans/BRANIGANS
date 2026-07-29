@@ -43,7 +43,7 @@ export default function Subscribe() {
   return (
     <div className="auth-wrap">
       <div className="card subscribe-card">
-        <h1>Desbloquea Branigans Style</h1>
+        <h1>Desbloquea MYFEE</h1>
         <p className="subscribe-lead">
           Hola{user ? `, ${user.displayName}` : ''}. Suscríbete para ver el feed de outfits, subir los tuyos y
           seguir a otras personas con buen gusto.

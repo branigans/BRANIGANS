@@ -15,7 +15,7 @@ export default function Header() {
   return (
     <header className="header">
       <div className="brand">
-        <span className="brand-name">BRANIGANS STYLE</span>
+        <span className="brand-name">MYFEE</span>
         <span className="brand-tagline">combina tu outfit</span>
       </div>
       {user && isSubscribed && (
