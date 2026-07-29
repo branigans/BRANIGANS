@@ -1,4 +1,4 @@
-const BASE = '/api';
+const BASE = 'https://branigans-production.up.railway.app/api';
 
 function getToken() {
   return localStorage.getItem('outfit_token');
